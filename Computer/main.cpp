@@ -7,6 +7,11 @@
 #include "hexapod.hpp"
 
 void save_to_file(Hexapod& hex, const std::string& filename) {
+    if (filename == "default_data.json") {
+        std::cerr << "Error: Tried overwriting the default data! use another filename!\n";
+        return;
+    }
+
     std::ofstream file(filename, std::ios::out | std::ios::trunc);
     file << hex.save().dump(2);
     file.close();
@@ -29,8 +34,8 @@ int main() {
     std::cout << "Hello, World!\n";
 
     Hexapod hexapod;
-    
-    load_from_file(hexapod, "data.json");
+
+    load_from_file(hexapod, "default_data.json");
 
     hexapod.calculateRestingPositions(100);
 

@@ -11,22 +11,74 @@
 #include <tuple>
 #include <array>
 #include <cmath>
+#include <map>
+#include <functional>
 
 #ifndef HEXAPOD_HPP
 #define HEXAPOD_HPP
+
+static float map(float a, float b, float c, float d, float val) {
+    return (val - a) / (b - a) * (d - c) + c;
+}
 
 // The Hexapod class houses the control of the target points of the legs
 class Hexapod {
     std::array<Leg, 6> m_legs;
     std::array<nlohmann::json, 6> m_leg_data;
 
+    nlohmann::json m_data;
+
     std::array<float, 18> m_servo_angles;
+
+    vector::Vector<6, Vector2f> m_leg_position;
+    vector::Vector<6, bool> m_leg_grounded;
+
+    void moveLeg(int i, Vector2f vec) {
+        Vector2f resting_pos = static_cast<Vector2f>(m_leg_data[i].at("rest_position").get<std::array<float, 2>>());
+        float radius = m_data.at("step_dist").get<float>();
+
+        if (m_leg_grounded[i]) m_leg_position[i] += vec;
+        else                   m_leg_position[i] -= vec;
+
+        Vector2f diff = m_leg_position[i] - resting_pos;
+        float diff_mag = diff.magnitude();
+        if (diff_mag > radius) {
+            m_leg_grounded[i] = !m_leg_grounded[i];
+
+            // normalize diff
+            diff.normalize();
+
+            m_leg_position[i] = resting_pos + diff * radius;
+
+            moveLeg(i, diff.inverted() * (diff_mag - radius));
+        }
+    }
+
+    void applyLinearCycle(float delta) {
+
+    }
+    void applyRotationalCycle(float delta) {
+
+    }
 
 public:
     Hexapod() {
         
     }
 
+    // @param delta is in milliseconds
+    // @param rot can be negative for turning in the other direction
+    void updateWalkCycles(float delta, float lin, float rot, Vector2f linear_direction) {
+        float speed = std::max(lin, std::abs(rot));
+        Vector2f pos = (Vector2f{lin, rot} * speed).normalized();
+
+        float dt = delta * speed * m_data.at("speed").get<float>();
+
+        applyLinearCycle(dt * pos.at(0));
+        applyRotationalCycle(dt * pos.at(1));
+    }
+
+    // only call while the robot is resting
     // sets the resting positions of each leg on a circle around the center point of the robot
     // @param radius is the radius of the circle
     void calculateRestingPositions(float radius) {
@@ -63,6 +115,8 @@ public:
             
             data["legs"].push_back(leg_save);
         }
+
+        data["data"] = m_data;
         
         return data;
     }
@@ -71,6 +125,8 @@ public:
             m_legs[i].load(data["legs"][i]["leg"]);
             m_leg_data[i] = data["legs"][i]["data"];
         }
+
+        m_data = data["data"];
     }
 };
 

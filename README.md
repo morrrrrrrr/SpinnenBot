@@ -103,18 +103,18 @@ Speed controls how many seconds per walk cycle.
 A speed of 1 means, that (on full throttle) the robot takes one walk cycle per second
 A speed of 0.1 means 10 seconds per walk cycle
 
-### Linear Distance ("lin_dist")
+### Linear Distance ("step_dist")
 
-Linear Distance controls how many millimeters are covered per walk cycle by one leg
-
-### Rotational Distance ("rot_dist")
-
-Rotational Distance controls how many degrees are turned per walk cycle by one leg
+How many millimeters can the leg go away from its resting position (per cycle)
 
 ### Ground Percent ("ground_percent")
 
 How much percent of the walk cycle is on the ground
 
-### Height ("ground_distance")
+### Robot Height ("rob_height")
 
 How many millimeters does the robot hover over the ground
+
+### Step Height ("step_height")
+
+Peak height of the walk cycle (relative to ground)
