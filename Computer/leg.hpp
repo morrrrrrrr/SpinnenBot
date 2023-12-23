@@ -28,8 +28,13 @@ class Leg {
 
 public:
     // Simple Constructor
+    Leg() { }
+    
     Leg(float angle, Vector3f axis_lengths, Vector3f servo_offsets) : 
         m_angle(angle), m_axis_lengths(axis_lengths), m_servo_offsets(servo_offsets), m_target_point({0, 0, 0}) {  }
+    Leg(const nlohmann::json& data) : m_target_point({0, 0, 0}) {
+        load(data);
+    }
 
     // Set the target position of the leg (input point is in global coordinates)
     void setTarget(const Vector3f& target) {

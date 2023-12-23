@@ -1,0 +1,118 @@
+{
+  "legs": [
+    {
+      "data": {
+        "origin_offset": [
+          0.0,
+          0.0
+        ],
+        "rest_angle_offset": 0
+      },
+      "leg": {
+        "angle": 31.315000534057617,
+        "axis_lengths": [
+          60.04999923706055,
+          73.0,
+          62.0
+        ],
+        "servo_offsets": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "data": {
+        "origin_offset": [
+          0.0,
+          0.0
+        ],
+        "rest_angle_offset": 0
+      },
+      "leg": {
+        "angle": 90.0,
+        "axis_lengths": [
+          60.04999923706055,
+          73.0,
+          62.0
+        ],
+        "servo_offsets": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "data": {
+        "origin_offset": [
+          0.0,
+          0.0
+        ],
+        "rest_angle_offset": 0
+      },
+      "leg": {
+        "angle": 148.68499755859375,
+        "axis_lengths": [
+          60.04999923706055,
+          73.0,
+          62.0
+        ],
+        "servo_offsets": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "data": null,
+      "leg": {
+        "angle": 211.31500244140625,
+        "axis_lengths": [
+          60.04999923706055,
+          73.0,
+          62.0
+        ],
+        "servo_offsets": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "data": null,
+      "leg": {
+        "angle": 270.0,
+        "axis_lengths": [
+          60.04999923706055,
+          73.0,
+          62.0
+        ],
+        "servo_offsets": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "data": null,
+      "leg": {
+        "angle": 328.68499755859375,
+        "axis_lengths": [
+          60.04999923706055,
+          73.0,
+          62.0
+        ],
+        "servo_offsets": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    }
+  ]
+}
