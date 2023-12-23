@@ -7,6 +7,7 @@
 
 #include "constants.hpp"
 #include <cmath>
+#include <string>
 
 #ifndef LEG_HPP
 #define LEG_HPP
@@ -48,7 +49,7 @@ public:
     // Calculate the axis angles based on inverse kinematic
     Vector3f calculate() const {
         float x = std::sqrt(
-            m_target_point.at(0)*m_target_point.at(0) + m_target_point.at(2)*m_target_point.at(2)
+            square(m_target_point.at(0)) + square(m_target_point.at(2))
         ) - m_axis_lengths.at(0);
         float y = m_target_point.at(1); // y part of the target point
 
@@ -58,7 +59,7 @@ public:
         float l1 = m_axis_lengths.at(1), l2 = m_axis_lengths.at(2);
 
         float a = std::acos(
-            (l1*l1 + l2*l2 - x*x - y*y) / (2*l1*l2)
+            (square(l1) + square(l2) - square(x) - square(y)) / (2*l1*l2)
         ); // Angle alpha between axises
         float p2 = M_PI - a;
 
@@ -76,6 +77,14 @@ public:
     Vector3f calculate(const Vector3f& target) {
         setTarget(target);
         return calculate();
+    }
+
+    
+    std::string save() const {
+        
+    }
+    void load(const std::string& str) {
+
     }
 };
 
