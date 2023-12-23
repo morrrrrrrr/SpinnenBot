@@ -6,6 +6,7 @@
  */
 
 #include "constants.hpp"
+#include "vector.hpp"
 #include <tuple>
 #include <cmath>
 
