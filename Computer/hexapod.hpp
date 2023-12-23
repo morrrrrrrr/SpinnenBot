@@ -50,6 +50,24 @@ public:
                 0, 0
             }}
         };
+        m_leg_data[3] = {
+            {"rest_angle_offset", 0},
+            {"origin_offset", std::array<float, 2>{
+                0, 0
+            }}
+        };
+        m_leg_data[4] = {
+            {"rest_angle_offset", 0},
+            {"origin_offset", std::array<float, 2>{
+                0, 0
+            }}
+        };
+        m_leg_data[5] = {
+            {"rest_angle_offset", 0},
+            {"origin_offset", std::array<float, 2>{
+                0, 0
+            }}
+        };
     }
 
     // sets the resting positions of each leg on a circle around the center point of the robot

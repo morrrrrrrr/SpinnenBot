@@ -67,7 +67,13 @@
       }
     },
     {
-      "data": null,
+      "data": {
+        "origin_offset": [
+          0.0,
+          0.0
+        ],
+        "rest_angle_offset": 0
+      },
       "leg": {
         "angle": 211.31500244140625,
         "axis_lengths": [
@@ -83,7 +89,13 @@
       }
     },
     {
-      "data": null,
+      "data": {
+        "origin_offset": [
+          0.0,
+          0.0
+        ],
+        "rest_angle_offset": 0
+      },
       "leg": {
         "angle": 270.0,
         "axis_lengths": [
@@ -99,7 +111,13 @@
       }
     },
     {
-      "data": null,
+      "data": {
+        "origin_offset": [
+          0.0,
+          0.0
+        ],
+        "rest_angle_offset": 0
+      },
       "leg": {
         "angle": 328.68499755859375,
         "axis_lengths": [
