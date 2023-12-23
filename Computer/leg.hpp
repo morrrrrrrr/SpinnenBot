@@ -6,6 +6,7 @@
  */
 
 #include "constants.hpp"
+#include "nlohmann/json.hpp"
 #include <cmath>
 #include <string>
 
@@ -15,8 +16,6 @@
 #define M_PI 3.14159265358979323846 /* pi */
 
 class Leg {
-    uint8_t m_index;
-    
     // in which angle does the local coordinate system stand to the global
     // used for converting global space points into local space
     float m_angle;
@@ -29,8 +28,8 @@ class Leg {
 
 public:
     // Simple Constructor
-    Leg(uint8_t index, float angle, Vector3f axis_lengths, Vector3f servo_offsets) : 
-        m_index(index), m_angle(angle), m_axis_lengths(axis_lengths), m_servo_offsets(servo_offsets), m_target_point({0, 0, 0}) {  }
+    Leg(float angle, Vector3f axis_lengths, Vector3f servo_offsets) : 
+        m_angle(angle), m_axis_lengths(axis_lengths), m_servo_offsets(servo_offsets), m_target_point({0, 0, 0}) {  }
 
     // Set the target position of the leg (input point is in global coordinates)
     void setTarget(const Vector3f& target) {
@@ -79,12 +78,25 @@ public:
         return calculate();
     }
 
-    
-    std::string save() const {
-        
-    }
-    void load(const std::string& str) {
+    // save leg settings to a json object
+    nlohmann::json save() const {
+        nlohmann::json data;
 
+        data["angle"] = m_angle;
+        data["axis_lengths"] = std::array<float, 3>{
+            m_axis_lengths.at(0), m_axis_lengths.at(1), m_axis_lengths.at(2)
+        };
+        data["servo_offsets"] = std::array<float, 3>{
+            m_servo_offsets.at(0), m_servo_offsets.at(1), m_servo_offsets.at(2)
+        };
+
+        return data;
+    }
+    // load leg settings from a json object
+    void load(const nlohmann::json& data) {
+        m_angle = data.at("angle").get<float>();
+        m_axis_lengths = static_cast<Vector3f>(data.at("axis_lengths").get<std::array<float, 3>>());
+        m_servo_offsets = static_cast<Vector3f>(data.at("servo_offsets").get<std::array<float, 3>>());
     }
 };
 
