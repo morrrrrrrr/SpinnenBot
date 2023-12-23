@@ -7,6 +7,9 @@ Code for a 6-legged spider bot
 - [Coordinates](#coordinates)
 - [Movement](#movement)
 - [Saving and Loading](#saving-and-loading)
+- [Walk Cycle](#walk-cycle)
+- [Input](#input)
+- [Settings](#settings)
 
 ## Coordinates
 
@@ -76,7 +79,7 @@ float rot=1.0;
 
 float speed = max(lin, rot); // speed can never go over 100%
 
-Vector2f pos = (Vector2f{lin, rot} * speed).normalized() // all inputs always add up to 100%
+Vector2f pos = (Vector2f{lin, rot} * speed).normalized(); // all inputs always add up to 100%
 ```
 
 ### Edge Case: All Inputs are 0
@@ -84,3 +87,34 @@ Vector2f pos = (Vector2f{lin, rot} * speed).normalized() // all inputs always ad
 When all Inputs are 0, the speed is also set to 0, so nothing moves
 
 Maybe then after 1 second start moving all legs to their origin position
+
+## Settings
+
+These are the settings that modify the behavior of the hexapod robot
+
+They are stored in a json in the hexapod-class
+
+The string in the brackets is the key
+
+### Speed ("speed")
+
+Speed controls how many seconds per walk cycle.
+
+A speed of 1 means, that (on full throttle) the robot takes one walk cycle per second
+A speed of 0.1 means 10 seconds per walk cycle
+
+### Linear Distance ("lin_dist")
+
+Linear Distance controls how many millimeters are covered per walk cycle by one leg
+
+### Rotational Distance ("rot_dist")
+
+Rotational Distance controls how many degrees are turned per walk cycle by one leg
+
+### Ground Percent ("ground_percent")
+
+How much percent of the walk cycle is on the ground
+
+### Height ("ground_distance")
+
+How many millimeters does the robot hover over the ground
