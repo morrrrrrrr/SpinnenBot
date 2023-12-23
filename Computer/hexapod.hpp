@@ -24,50 +24,7 @@ class Hexapod {
 
 public:
     Hexapod() {
-        Vector3f axis_lengths{ 60.05, 73, 62 }, servo_offsets{ 0, 0, 0 };
-        m_legs[0] = Leg( 31.315, axis_lengths, servo_offsets);
-        m_legs[1] = Leg( 90.000, axis_lengths, servo_offsets);
-        m_legs[2] = Leg(148.685, axis_lengths, servo_offsets);
-        m_legs[3] = Leg(211.315, axis_lengths, servo_offsets);
-        m_legs[4] = Leg(270.000, axis_lengths, servo_offsets);
-        m_legs[5] = Leg(328.685, axis_lengths, servo_offsets);
-
-        m_leg_data[0] = {
-            {"rest_angle_offset", 0},
-            {"origin_offset", std::array<float, 2>{
-                0, 0
-            }}
-        };
-        m_leg_data[1] = {
-            {"rest_angle_offset", 0},
-            {"origin_offset", std::array<float, 2>{
-                0, 0
-            }}
-        };
-        m_leg_data[2] = {
-            {"rest_angle_offset", 0},
-            {"origin_offset", std::array<float, 2>{
-                0, 0
-            }}
-        };
-        m_leg_data[3] = {
-            {"rest_angle_offset", 0},
-            {"origin_offset", std::array<float, 2>{
-                0, 0
-            }}
-        };
-        m_leg_data[4] = {
-            {"rest_angle_offset", 0},
-            {"origin_offset", std::array<float, 2>{
-                0, 0
-            }}
-        };
-        m_leg_data[5] = {
-            {"rest_angle_offset", 0},
-            {"origin_offset", std::array<float, 2>{
-                0, 0
-            }}
-        };
+        
     }
 
     // sets the resting positions of each leg on a circle around the center point of the robot
