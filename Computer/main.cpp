@@ -40,4 +40,7 @@ int main() {
     hexapod.calculateRestingPositions(100);
 
     save_to_file(hexapod, "new_data.json");
+
+    hexapod.update(0.1, 0.5, {0, 1}, 0.0);
+    hexapod.calculateServoAngles();
 }

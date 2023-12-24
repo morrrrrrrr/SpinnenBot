@@ -23,6 +23,14 @@ static float map(float a, float b, float c, float d, float val) {
 
 // The Hexapod class houses the control of the target points of the legs
 class Hexapod {
+    enum State {
+        Sleep, Stand, Walk, // States
+        SLEEP_TO_STAND, STAND_TO_SLEEP, WALK_TO_STAND, STAND_TO_WALK // Transitions
+    };
+
+    State m_state = State::Sleep;
+    float m_transition_timer = 0;
+
     std::array<Leg, 6> m_legs;
     std::array<nlohmann::json, 6> m_leg_data;
 
@@ -100,6 +108,19 @@ class Hexapod {
 
     }
 
+    // Initiates a transition
+    // @param transition is the transition (needs to be a transition)
+    void initiateTransition(State transition) {
+        // check, if the transition is possible
+        if (!canTransition(transition)) return;
+
+        // reset the timer
+        m_transition_timer = 0;
+
+        // set the state
+        m_state = transition;
+    }
+
 public:
     Hexapod() {
         
@@ -110,17 +131,48 @@ public:
     // @param lin is the percent of linear walking input
     // @param linear_direction is the direction of linear input; doesn't need to be normalized
     // @param rot is the percent of rotational walking input; can be negative for turning in the other direction
-    void updateWalkCycles(float delta, float lin, const Vector2f& linear_direction, float rot) {
+    void update(float delta, float lin, const Vector2f& linear_direction, float rot) {
         float speed = std::max(lin, std::abs(rot));
         Vector2f pos = (Vector2f{lin, rot} * speed).normalized();
 
         // modify the delta time by the speed stats
-        float dt = delta * speed * m_data.at("speed").get<float>();
+        float dt = delta * m_data.at("speed").get<float>();
 
-        applyLinearCycle(dt * pos.at(0), linear_direction.normalized());
+        m_transition_timer += dt;
 
-        // if rot was negative, pos.at(1) is also negative now, so the delta time is negative, so the rotational movement gets reversed
-        applyRotationalCycle(dt * pos.at(1));
+        switch (m_state) {
+        case State::Sleep:
+            // do nothing
+            break;
+        case State::Stand:
+            // do nothing
+            break;
+        case State::Walk:
+            applyLinearCycle(dt * pos.at(0) * speed, linear_direction.normalized());
+
+            // if rot was negative, pos.at(1) is also negative now, so the delta time is negative, so the rotational movement gets reversed
+            applyRotationalCycle(dt * pos.at(1) * speed);
+            break;
+        
+        // TRANSITIONS:
+        case State::SLEEP_TO_STAND:
+            break;
+        case State::STAND_TO_SLEEP:
+            break;
+        case State::WALK_TO_STAND:
+            break;
+        case State::STAND_TO_WALK:
+            break;
+        }
+    }
+
+    // checks, if the transition could be made
+    bool canTransition(State transition) {
+        return
+            (m_state == State::Sleep && transition == State::SLEEP_TO_STAND) ||
+            (m_state == State::Stand && transition == State::STAND_TO_SLEEP) ||
+            (m_state == State::Stand && transition == State::STAND_TO_WALK) ||
+            (m_state == State::Walk && transition == State::WALK_TO_STAND);
     }
 
     // Calculates the Servo angles by calling the leg.calculate for every leg

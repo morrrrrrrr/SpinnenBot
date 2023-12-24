@@ -13,8 +13,6 @@
 #ifndef LEG_HPP
 #define LEG_HPP
 
-#define M_PI 3.14159265358979323846 /* pi */
-
 class Leg {
     // in which angle does the local coordinate system stand to the global
     // used for converting global space points into local space

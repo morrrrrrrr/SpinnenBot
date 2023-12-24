@@ -9,6 +9,7 @@ Code for a 6-legged spider bot
 - [Saving and Loading](#saving-and-loading)
 - [Walk Cycle](#walk-cycle)
 - [Input](#input)
+- [States](#robot-states)
 - [Settings](#settings)
 
 ## Coordinates
@@ -40,7 +41,7 @@ All Legs move in the same direction when grounded
 
 ### Rotational Movement
 
-All Legs move
+All Legs move in a circular pattern around the center point
 
 ## Saving and Loading
 
@@ -86,6 +87,26 @@ Vector2f pos = (Vector2f{lin, rot} * speed).normalized(); // all inputs always a
 When all Inputs are 0, the speed is also set to 0, so nothing moves
 
 Maybe then after 1 second start moving all legs to their origin position
+
+## Robot States
+
+When connected, the robot always is in one of these 3 States:
+
+- __Sleeping__: None of the legs touch the ground. The robot sits on it's chasis
+- __Standing__: All of the legs touch the ground: The robot is move-ready
+- __Walking__: Walk cycle is executed
+
+### Gaits
+
+When switching from standing to walking, at first a GAIT is initiated
+
+The Gait tells the legs, where they should start
+
+### Stopping Movement
+
+When stopping movement, the user has an X-second delay, before the robot automatically moves back to standing
+
+While the robot transitions no movement can be done
 
 ## Settings
 
