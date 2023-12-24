@@ -1,7 +1,7 @@
 
 #include "SFML/Graphics.hpp"
 #include "vector.hpp"
-#include "../constants.hpp"
+#include "constants.hpp"
 #include <vector>
 #include <thread>
 
@@ -110,6 +110,13 @@ public:
 
         rend.m_is_running = true;
         rend.m_running_thread.join();
+    }
+
+    static void setPoints(const std::vector<Vector2f>& points) {
+        Renderer::getInstance().m_points = points;
+    }
+    static void setConnections(const std::vector<Connection>& connections) {
+        Renderer::getInstance().m_connections = connections;
     }
 };
 
