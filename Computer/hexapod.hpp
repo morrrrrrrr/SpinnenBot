@@ -28,14 +28,48 @@ class Hexapod {
 
     nlohmann::json m_data;
 
-    std::array<float, 18> m_servo_angles;
-
+    // X-Z plane leg position
     vector::Vector<6, Vector2f> m_leg_position;
+    // flag, if the leg is on ground
     vector::Vector<6, bool> m_leg_grounded;
 
+    // The height function takes in the distance to the edge of the move circle and returns the height, if the leg is not on ground
+    // @param i the index of the leg (used to calculate the distance and check the ground flag)
+    // @returns the height of the leg
+    float heightFunction(int i) {
+        const float rob_height = m_data.at("rob_height").get<float>();
+        const float step_height = m_data.at("step_height").get<float>();
+
+        // if the leg is on the ground, it should be 'rob_height' below the robot center
+        if (m_leg_grounded[i]) return -rob_height;
+
+        // get resting pos and radius from data
+        const Vector2f resting_pos = static_cast<Vector2f>(m_leg_data[i].at("rest_position").get<std::array<float, 2>>());
+        const float radius = m_data.at("step_dist").get<float>();
+
+        // distance between pos and edge of the circle
+        float dist = std::abs(
+            // difference between resting pos and current
+            (m_leg_position[i] - resting_pos).magnitude() -
+            radius // minus radius
+        );
+
+        // maximum distance is radius
+        float t = dist / radius;
+        // 0 if the pos is directly on the edge                      -> height should be -rob_height
+        // 1 if the pos is directly in the center of the walk circle -> height should be -rob_height + step_height
+
+        // this function (1.14 * t*t*t - 3.28 * t*t + 3.14 * t) was constructed in geogebra
+        return -rob_height + (1.14 * t*t*t - 3.28 * t*t + 3.14 * t) * step_height;
+    }
+
+    // moves a leg of the robot by a distance. 
+    // the function toggles the grounded flags and recursivly adds not-used distance when it hits an edge
+    // @param i is the leg-index
+    // @param vec is the distance moved
     void moveLeg(int i, Vector2f vec) {
-        Vector2f resting_pos = static_cast<Vector2f>(m_leg_data[i].at("rest_position").get<std::array<float, 2>>());
-        float radius = m_data.at("step_dist").get<float>();
+        const Vector2f resting_pos = static_cast<Vector2f>(m_leg_data[i].at("rest_position").get<std::array<float, 2>>());
+        const float radius = m_data.at("step_dist").get<float>();
 
         if (m_leg_grounded[i]) m_leg_position[i] += vec;
         else                   m_leg_position[i] -= vec;
@@ -54,9 +88,14 @@ class Hexapod {
         }
     }
 
-    void applyLinearCycle(float delta) {
+    // Applies the linear walk cycle
+    // @param delta is the delta time in seconds
+    // @param dir is the `normalized` direction vector
+    void applyLinearCycle(float delta, const Vector2f& dir) {
 
     }
+    // Applies the rotational walk cycle
+    // @param delta is the delta time in seconds
     void applyRotationalCycle(float delta) {
 
     }
@@ -66,16 +105,46 @@ public:
         
     }
 
+    // Function, that updates the leg positions based on delta time and inputs
     // @param delta is in milliseconds
-    // @param rot can be negative for turning in the other direction
-    void updateWalkCycles(float delta, float lin, float rot, Vector2f linear_direction) {
+    // @param lin is the percent of linear walking input
+    // @param linear_direction is the direction of linear input; doesn't need to be normalized
+    // @param rot is the percent of rotational walking input; can be negative for turning in the other direction
+    void updateWalkCycles(float delta, float lin, const Vector2f& linear_direction, float rot) {
         float speed = std::max(lin, std::abs(rot));
         Vector2f pos = (Vector2f{lin, rot} * speed).normalized();
 
+        // modify the delta time by the speed stats
         float dt = delta * speed * m_data.at("speed").get<float>();
 
-        applyLinearCycle(dt * pos.at(0));
+        applyLinearCycle(dt * pos.at(0), linear_direction.normalized());
+
+        // if rot was negative, pos.at(1) is also negative now, so the delta time is negative, so the rotational movement gets reversed
         applyRotationalCycle(dt * pos.at(1));
+    }
+
+    // Calculates the Servo angles by calling the leg.calculate for every leg
+    std::array<float, 18> calculateServoAngles() {
+        std::array<float, 18> angles;
+
+        // loop over each leg
+        for (int i = 0; i < 6; i++) {
+            Vector3f leg_position{
+                m_leg_position[i].at(0), // X
+                heightFunction(i),       // Y
+                m_leg_position[i].at(1)  // Z
+            };
+
+            // call the calculate version, that also takes in the target position of the leg
+            Vector3f leg_angles = m_legs[i].calculate(leg_position);
+
+            // fill in the values in the angles array
+            for (int j = 0; j < 3; j++) {
+                angles[i * 3 + j] = leg_angles.at(j);
+            }
+        }
+
+        return angles;
     }
 
     // only call while the robot is resting
@@ -99,6 +168,7 @@ public:
         }
     }
 
+    // Save the configurations to a json object
     nlohmann::json save() {
         nlohmann::json data;
         
@@ -120,6 +190,7 @@ public:
         
         return data;
     }
+    // Load configurations from a json object
     void load(const nlohmann::json& data) {
         for (int i = 0; i < 6; i++) {
             m_legs[i].load(data["legs"][i]["leg"]);

@@ -48,15 +48,14 @@ Currently, the leg and the hexapod class have a function for loading and saving 
 
 ## Walk Cycle
 
-A walk cycle is the movement of a leg based on the time
+The legs move based on the `delta time`
 
-Any walk cylce takes 1000 ms (1s)
+Legs have a radius around their resting position, in that they can move freely around
 
-Walk cycles can be added, to overlay them
+When a leg leaves this circle, it transitions from being on ground to being in the air (or the other way around)
 
-There are 3 parameters for each walk cycle:
+When a leg is in the air, it mirrows the movement on ground
 
-- __t__: time in milliseconds
 - __pos__: how much ground is cleared by the walk cycle in percent (when there are multiple walk cycles, the pos% of them all must add up to 100%)
 - __speed__: how fast is the walk cycle updated in percent (is the maximum percent from all of the inputs)
 
