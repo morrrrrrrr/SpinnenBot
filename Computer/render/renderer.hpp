@@ -3,6 +3,7 @@
 #include "vector.hpp"
 #include "constants.hpp"
 #include <vector>
+#include <algorithm>
 #include <thread>
 
 #ifndef RENDERER_HPP
@@ -23,19 +24,21 @@ class Renderer {
     bool m_is_running = false;
     std::thread m_running_thread;
 
-    std::vector<Vector2f> m_points;
+    std::vector<Vector3f> m_points;
     std::vector<Connection> m_connections;
+
+    Vector2u m_screen_size;
 
     Renderer() {
 
     }
 
     // this function runs on a different thread
-    static void thread_function(const sf::Vector2u& window_size) {
+    static void thread_function(const Vector2u& window_size) {
         Renderer& rend = Renderer::getInstance();
 
         // create the window
-        sf::RenderWindow window(sf::VideoMode(window_size.x, window_size.y), "Render", sf::Style::Close | sf::Style::Titlebar);
+        sf::RenderWindow window(sf::VideoMode(window_size.at(0), window_size.at(1)), "Render", sf::Style::Close | sf::Style::Titlebar);
 
         window.setFramerateLimit(60);
 
@@ -76,6 +79,15 @@ class Renderer {
 
             window.clear(background_color);
 
+            std::sort(rend.m_connections.begin(), rend.m_connections.end(), [&rend](const Connection& a, const Connection& b) -> bool {
+                // calculate the z pos of the middle of connection a and b
+                float a_z = (rend.m_points[a.a].at(2) + rend.m_points[a.b].at(2)) / 2;
+                float b_z = (rend.m_points[b.a].at(2) + rend.m_points[b.b].at(2)) / 2;
+
+                // return, which line should be drawn first -> the line more behind
+                return a_z > b_z;
+            });
+
             // draw lines here:
             for (const Connection& connection : rend.m_connections) {
                 draw_line(
@@ -95,9 +107,10 @@ public:
         return instance;
     }
 
-    static void init(const sf::Vector2u& window_size) {
+    static void init(const Vector2u& window_size) {
         Renderer& rend = Renderer::getInstance();
         rend.m_is_running = true;
+        rend.m_screen_size = window_size;
 
         rend.m_running_thread = std::thread(
             thread_function,
@@ -108,15 +121,22 @@ public:
     static void stop() {
         Renderer& rend = Renderer::getInstance();
 
-        rend.m_is_running = true;
+        // idiot safety (for me)
+        if (!rend.m_is_running) return;
+
+        rend.m_is_running = false;
         rend.m_running_thread.join();
     }
 
-    static void setPoints(const std::vector<Vector2f>& points) {
+    static void setPoints(const std::vector<Vector3f>& points) {
         Renderer::getInstance().m_points = points;
     }
     static void setConnections(const std::vector<Connection>& connections) {
         Renderer::getInstance().m_connections = connections;
+    }
+
+    static Vector2u getScreenSize() {
+        return Renderer::getInstance().m_screen_size;
     }
 };
 

@@ -138,3 +138,7 @@ How many millimeters does the robot hover over the ground
 ### Step Height ("step_height")
 
 Peak height of the walk cycle (relative to ground)
+
+### Servo Offsets ("servo_offsets")
+
+Array of 18 servo offsets

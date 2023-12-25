@@ -9,6 +9,8 @@
 using Vector3f = vector::Vector<3, float>;
 using Vector2f = vector::Vector<2, float>;
 
+using Vector2u = vector::Vector<2, unsigned>;
+
 static float square(float x) {
     return x*x;
 }

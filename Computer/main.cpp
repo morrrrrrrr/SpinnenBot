@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include "hexapod.hpp"
+#include "input.hpp"
 
 void save_to_file(Hexapod& hex, const std::string& filename) {
     if (filename == "default_data.json") {
@@ -33,14 +34,37 @@ void load_from_file(Hexapod& hex, const std::string& filename) {
 int main() {
     std::cout << "Hello, World!\n";
 
+    Renderer::init({800, 600});
+
     Hexapod hexapod;
 
-    load_from_file(hexapod, "default_data.json");
+    load_from_file(hexapod, "new_data.json");
 
-    hexapod.calculateRestingPositions(100);
+    // hexapod.calculateRestingPositions(100);
 
-    save_to_file(hexapod, "new_data.json");
+    Input input;
 
-    hexapod.update(0.1, 0.5, {0, 1}, 0.0);
-    hexapod.calculateServoAngles();
+    save_to_file(hexapod, "new_data2.json");
+
+    unsigned long long t0 = clock();
+    while (true) {
+        float dt = (clock() - t0) / 1000.0f;
+        t0 = clock();
+
+        input.update();
+
+        Vector2f input_vector({
+            static_cast<float>(input.getKey(sf::Keyboard::D) - input.getKey(sf::Keyboard::A)),
+            static_cast<float>(input.getKey(sf::Keyboard::W) - input.getKey(sf::Keyboard::S))
+        });
+
+        if (input_vector.at(0) || input_vector.at(1))
+            hexapod.update(dt, 50, input_vector, 0.0);
+        hexapod.calculateServoAngles();
+        RobotRenderer::sendConnections();
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+    Renderer::stop();
 }

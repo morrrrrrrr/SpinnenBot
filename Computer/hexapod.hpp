@@ -8,6 +8,8 @@
 #include "nlohmann/json.hpp"
 #include "leg.hpp"
 
+#include "render/robot_renderer.hpp"
+
 #include <tuple>
 #include <array>
 #include <cmath>
@@ -92,7 +94,7 @@ class Hexapod {
 
             m_leg_position[i] = resting_pos + diff * radius;
 
-            moveLeg(i, diff.inverted() * (diff_mag - radius));
+            // moveLeg(i, diff.inverted() * (diff_mag - radius));
         }
     }
 
@@ -100,7 +102,7 @@ class Hexapod {
     // @param delta is the delta time in seconds
     // @param dir is the `normalized` direction vector
     void applyLinearCycle(float delta, const Vector2f& dir) {
-
+        for (int i = 0; i < 6; i++) moveLeg(i, dir * delta);
     }
     // Applies the rotational walk cycle
     // @param delta is the delta time in seconds
@@ -123,7 +125,7 @@ class Hexapod {
 
 public:
     Hexapod() {
-        
+        m_state = State::Walk;
     }
 
     // Function, that updates the leg positions based on delta time and inputs
@@ -178,23 +180,36 @@ public:
     // Calculates the Servo angles by calling the leg.calculate for every leg
     std::array<float, 18> calculateServoAngles() {
         std::array<float, 18> angles;
+        std::array<Vector3f, 6> leg_positions;
 
         // loop over each leg
         for (int i = 0; i < 6; i++) {
+            Vector2f offset = static_cast<Vector2f>(m_leg_data[i].at("origin_offset").get<std::array<float, 2>>());
             Vector3f leg_position{
                 m_leg_position[i].at(0), // X
                 heightFunction(i),       // Y
                 m_leg_position[i].at(1)  // Z
             };
 
+            leg_positions[i] = leg_position;
+
             // call the calculate version, that also takes in the target position of the leg
-            Vector3f leg_angles = m_legs[i].calculate(leg_position);
+            Vector3f leg_angles = m_legs[i].calculate(leg_position - Vector3f{offset.at(0), 0, offset.at(1)});
 
             // fill in the values in the angles array
             for (int j = 0; j < 3; j++) {
                 angles[i * 3 + j] = leg_angles.at(j);
             }
         }
+
+        // send un-offsetted angles to renderer
+        RobotRenderer::sendAngles(m_leg_data, m_legs, angles, leg_positions);
+
+        // get offsets from data
+        std::array<float, 18> offsets = m_data["servo_offsets"].get<std::array<float, 18>>();
+
+        // apply offsets
+        for (int i = 0; i < 18; i++) angles[i] += offsets[i];
 
         return angles;
     }
@@ -205,6 +220,9 @@ public:
     void calculateRestingPositions(float radius) {
         for (int i = 0; i < 6; i++) {
             float angle = m_legs[i].getAngle() + m_leg_data[i].at("rest_angle_offset").get<float>();
+            
+            angle *= (M_PI / 180);
+            
             Vector2f direction{ std::cos(angle), std::sin(angle) };
             Vector2f offset = static_cast<Vector2f>(m_leg_data[i].at("origin_offset").get<std::array<float, 2>>());
 
@@ -250,6 +268,17 @@ public:
         }
 
         m_data = data["data"];
+
+        for (int i = 0; i < 6; i++)
+            m_legs[i].getAngle() = 90 - m_legs[i].getAngle();
+
+        calculateRestingPositions(200);
+
+        for (int i = 0; i < 6; i++) {
+            // m_leg_grounded[i] = true;
+            m_leg_grounded[i] = (i % 2);
+            m_leg_position[i] = static_cast<Vector2f>(m_leg_data[i].at("rest_position").get<std::array<float, 2>>());
+        }
     }
 };
 

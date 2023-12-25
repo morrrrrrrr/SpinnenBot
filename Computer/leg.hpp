@@ -19,7 +19,6 @@ class Leg {
     float m_angle;
 
     Vector3f m_axis_lengths;
-    Vector3f m_servo_offsets;
 
     // the taget point is in local space.
     Vector3f m_target_point;
@@ -29,7 +28,7 @@ public:
     Leg() { }
     
     Leg(float angle, Vector3f axis_lengths, Vector3f servo_offsets) : 
-        m_angle(angle), m_axis_lengths(axis_lengths), m_servo_offsets(servo_offsets), m_target_point({0, 0, 0}) {  }
+        m_angle(angle), m_axis_lengths(axis_lengths), m_target_point({0, 0, 0}) {  }
     Leg(const nlohmann::json& data) : m_target_point({0, 0, 0}) {
         load(data);
     }
@@ -43,10 +42,13 @@ public:
     float&    getAngle() { return m_angle; }
     // Get a modifiable reference to the vector of the axis lengths
     Vector3f& getAxisLengths() { return m_axis_lengths; }
-    // Get a modifiable reference to the vector that stores the servo offsets
-    Vector3f& getServoOffsets() { return m_servo_offsets; }
+
+    // Get a non-modifiable reference to the angle
+    const float&    getAngle() const { return m_angle; }
+    // Get a non-modifiable reference to the vector of the axis lengths
+    const Vector3f& getAxisLengths() const { return m_axis_lengths; }
     // Get a non-modifiable reference to the target vector (that is stored in local space to the leg coordinates)
-    Vector3f getTarget() const { return m_target_point; }
+    const Vector3f& getTarget() const { return m_target_point; }
 
     // Calculate the axis angles based on inverse kinematic
     Vector3f calculate() const {
@@ -69,9 +71,9 @@ public:
         float p1 = b + psi;
 
         return Vector3f{
-            p0 * 180 / static_cast<float>(M_PI) + m_servo_offsets.at(0),
-            p1 * 180 / static_cast<float>(M_PI) + m_servo_offsets.at(1),
-            p2 * 180 / static_cast<float>(M_PI) + m_servo_offsets.at(2)
+            p0 * 180 / static_cast<float>(M_PI),
+            p1 * 180 / static_cast<float>(M_PI),
+            p2 * 180 / static_cast<float>(M_PI)
         };
     }
 
@@ -89,9 +91,6 @@ public:
         data["axis_lengths"] = std::array<float, 3>{
             m_axis_lengths.at(0), m_axis_lengths.at(1), m_axis_lengths.at(2)
         };
-        data["servo_offsets"] = std::array<float, 3>{
-            m_servo_offsets.at(0), m_servo_offsets.at(1), m_servo_offsets.at(2)
-        };
 
         return data;
     }
@@ -99,7 +98,6 @@ public:
     void load(const nlohmann::json& data) {
         m_angle = data.at("angle").get<float>();
         m_axis_lengths = static_cast<Vector3f>(data.at("axis_lengths").get<std::array<float, 3>>());
-        m_servo_offsets = static_cast<Vector3f>(data.at("servo_offsets").get<std::array<float, 3>>());
     }
 };
 
