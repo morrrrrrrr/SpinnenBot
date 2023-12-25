@@ -59,11 +59,11 @@ int main() {
         });
 
         if (input_vector.at(0) || input_vector.at(1))
-            hexapod.update(dt, 50, input_vector, 0.0);
+            hexapod.update(dt, 150, input_vector.inverted(), 0.0);
         hexapod.calculateServoAngles();
         RobotRenderer::sendConnections();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        // std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
     Renderer::stop();

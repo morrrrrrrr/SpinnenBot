@@ -203,7 +203,6 @@ public:
         }
 
         Camera::toScreen(points);
-        std::cout << leg_positions[1] << "\n";
     }
 };
 

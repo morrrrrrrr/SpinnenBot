@@ -79,7 +79,10 @@ class Renderer {
 
             window.clear(background_color);
 
-            std::sort(rend.m_connections.begin(), rend.m_connections.end(), [&rend](const Connection& a, const Connection& b) -> bool {
+            // copy connections vector, to fix error when connections are reset, while sorting
+            std::vector<Connection> connections(rend.m_connections);
+
+            std::sort(connections.begin(), connections.end(), [&rend](const Connection& a, const Connection& b) -> bool {
                 // calculate the z pos of the middle of connection a and b
                 float a_z = (rend.m_points[a.a].at(2) + rend.m_points[a.b].at(2)) / 2;
                 float b_z = (rend.m_points[b.a].at(2) + rend.m_points[b.b].at(2)) / 2;
@@ -89,7 +92,7 @@ class Renderer {
             });
 
             // draw lines here:
-            for (const Connection& connection : rend.m_connections) {
+            for (const Connection& connection : connections) {
                 draw_line(
                     rend.m_points[connection.a],
                     rend.m_points[connection.b],

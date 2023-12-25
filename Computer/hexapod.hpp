@@ -86,6 +86,7 @@ class Hexapod {
 
         Vector2f diff = m_leg_position[i] - resting_pos;
         float diff_mag = diff.magnitude();
+        
         if (diff_mag > radius) {
             m_leg_grounded[i] = !m_leg_grounded[i];
 
