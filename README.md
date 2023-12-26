@@ -142,3 +142,24 @@ Peak height of the walk cycle (relative to ground)
 ### Servo Offsets ("servo_offsets")
 
 Array of 18 servo offsets
+
+
+# Communicaton Protocol:
+
+Serial/Bluetooth
+
+## Computer -> Arduino
+
+The only data that needs to be sent here is the motor angles
+
+- Protocol:
+
+    "{Motor Index}{Motor Angle}"
+
+### Motor Index
+
+Indexes are passed as lower-case letters (a = 0)
+
+### Motor Angles
+
+Angles are passed in DEGREES with offsets applied

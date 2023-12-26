@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include "hexapod.hpp"
+#include "connection.hpp"
 #include "input.hpp"
 
 void save_to_file(Hexapod& hex, const std::string& filename) {
@@ -36,6 +37,9 @@ int main() {
 
     Renderer::init({800, 600});
 
+    SerialConnection::setPortName("COM1");
+    if (SerialConnection::openConnection()) std::cout << "Sucess\n";
+
     Hexapod hexapod;
 
     load_from_file(hexapod, "new_data.json");
@@ -53,15 +57,18 @@ int main() {
 
         input.update();
 
-        Vector2f input_vector({
+        Vector2f lin_input_vector({
             static_cast<float>(input.getKey(sf::Keyboard::D) - input.getKey(sf::Keyboard::A)),
             static_cast<float>(input.getKey(sf::Keyboard::W) - input.getKey(sf::Keyboard::S))
         });
+        float rot_input = static_cast<float>(input.getKey(sf::Keyboard::E) - input.getKey(sf::Keyboard::Q));
 
-        if (input_vector.at(0) || input_vector.at(1))
-            hexapod.update(dt, 150, input_vector.inverted(), 0.0);
+        if (lin_input_vector.at(0) || lin_input_vector.at(1))
+            hexapod.update(dt, lin_input_vector.magnitude(), lin_input_vector.inverted(), rot_input);
+        else if (rot_input)
+            hexapod.update(dt, 0, {0, 1}, rot_input);
+
         hexapod.calculateServoAngles();
-        RobotRenderer::sendConnections();
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }

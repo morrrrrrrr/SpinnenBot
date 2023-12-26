@@ -78,25 +78,36 @@ class Hexapod {
     // @param i is the leg-index
     // @param vec is the distance moved
     void moveLeg(int i, Vector2f vec) {
+        if (!m_leg_grounded[i]) return;
+
         const Vector2f resting_pos = static_cast<Vector2f>(m_leg_data[i].at("rest_position").get<std::array<float, 2>>());
         const float radius = m_data.at("step_dist").get<float>();
 
-        if (m_leg_grounded[i]) m_leg_position[i] += vec;
-        else                   m_leg_position[i] -= vec;
+        m_leg_position[i] += vec;
 
         Vector2f diff = m_leg_position[i] - resting_pos;
         float diff_mag = diff.magnitude();
         
+        const int mirrow = i + ((i < 3) ? 3 : -3);
+        const Vector2f mirrow_resting_pos = static_cast<Vector2f>(m_leg_data[mirrow].at("rest_position").get<std::array<float, 2>>());
+
+        m_leg_position[mirrow] = diff.inverted() + mirrow_resting_pos;
+        
         if (diff_mag > radius) {
-            m_leg_grounded[i] = !m_leg_grounded[i];
+            m_leg_grounded[mirrow] = true;
+            m_leg_grounded[i] = false;
 
-            // normalize diff
-            diff.normalize();
-
-            m_leg_position[i] = resting_pos + diff * radius;
+            m_leg_position[i] = resting_pos + diff.normalized() * radius;
+            m_leg_position[mirrow] = mirrow_resting_pos - diff.normalized() * radius;
 
             // moveLeg(i, diff.inverted() * (diff_mag - radius));
         }
+    }
+
+    void checkPosition() {
+        int c = 0;
+        for (int i = 0; i < 6; i++) c += m_leg_grounded[i];
+        if (c < 3) std::cout << "UNSTABLE: " << c << "\n";
     }
 
     // Applies the linear walk cycle
@@ -108,7 +119,22 @@ class Hexapod {
     // Applies the rotational walk cycle
     // @param delta is the delta time in seconds
     void applyRotationalCycle(float delta) {
+        // Legs move in a circular pattern around the robot's center point
+        // Further away legs have to move more around the circle
 
+        for (int i = 0; i < 6; i++) {
+            Vector2f pos = m_leg_position[i];
+
+            float angle = std::atan2(pos.at(1), pos.at(0));
+            
+            angle += delta;
+
+            Vector2f new_pos = Vector2f{std::cos(angle), std::sin(angle)} * pos.magnitude();
+
+            moveLeg(i, new_pos - pos);
+        }
+
+        checkPosition();
     }
 
     // Initiates a transition
@@ -151,7 +177,7 @@ public:
             // do nothing
             break;
         case State::Walk:
-            applyLinearCycle(dt * pos.at(0) * speed, linear_direction.normalized());
+            applyLinearCycle(dt * pos.at(0) * speed * 50, linear_direction.normalized());
 
             // if rot was negative, pos.at(1) is also negative now, so the delta time is negative, so the rotational movement gets reversed
             applyRotationalCycle(dt * pos.at(1) * speed);
@@ -204,7 +230,7 @@ public:
         }
 
         // send un-offsetted angles to renderer
-        RobotRenderer::sendAngles(m_leg_data, m_legs, angles, leg_positions);
+        RobotRenderer::sendAngles(m_leg_data, m_legs, angles, leg_positions, m_leg_grounded);
 
         // get offsets from data
         std::array<float, 18> offsets = m_data["servo_offsets"].get<std::array<float, 18>>();

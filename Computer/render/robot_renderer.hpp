@@ -114,7 +114,7 @@ class RobotRenderer {
 
 public:
 
-    static void sendConnections() {
+    static void sendConnections(const vector::Vector<6, bool>& leg_grounded) {
         // {a, b, width, color}
         std::vector<Connection> connections;
         // for the legs: 6 * 4 points
@@ -125,7 +125,7 @@ public:
                     i * 4 + j,       // a
                     i * 4 + j + 1,   // b
                     3,              // width
-                    sf::Color::White // color
+                    leg_grounded.at(i) ? sf::Color::White : sf::Color::Red // color
                 });
             }
             // connections.push_back(Connection{
@@ -155,7 +155,8 @@ public:
     }
 
     static void sendAngles(
-        const nlohmann::json& leg_data, const std::array<Leg, 6>& legs, const std::array<float, 18>& angles, const std::array<Vector3f, 6>& leg_positions
+        const nlohmann::json& leg_data, const std::array<Leg, 6>& legs, const std::array<float, 18>& angles, const std::array<Vector3f, 6>& leg_positions,
+        const vector::Vector<6, bool>& leg_grounded
     ) {
         std::vector<Vector3f> points;
 
@@ -203,6 +204,7 @@ public:
         }
 
         Camera::toScreen(points);
+        sendConnections(leg_grounded);
     }
 };
 

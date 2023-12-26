@@ -34,7 +34,7 @@ class SerialPort {
     DCB _dcbSerialParams;
     HANDLE _hSerial;
 public:
-    SerialPort(const std::string& port, int bRate = 9600) : _port(port), _bRate(bRate) {
+    SerialPort(const std::string& port = "N/A", int bRate = 9600) : _port(port), _bRate(bRate) {
         _isOpen = false;
         _readBuffer.clear();
     }
@@ -66,6 +66,8 @@ public:
     }
 
     bool open() {
+        if (_port == "N/A") return false;
+
         try {
             if (_isOpen) {
                 throw SerialException("Tried to open Port that was already open");
@@ -122,6 +124,10 @@ public:
             return false;
         }
         return true;
+    }
+    bool open(const std::string& port) {
+        _port = port;
+        return this->open();
     }
 
     void close() {
